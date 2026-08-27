@@ -1,5 +1,6 @@
 /**
  * Isolated book log. One writer for booked rows.
+ * Columns match the Freight quote bookings Sheet.
  * No quote math, no payments. Static page cannot write Google Sheets.
  */
 (function (global) {
@@ -13,15 +14,19 @@
 
   function headers() {
     return [
-      "booked_at", "origin", "destination", "length_in", "width_in", "height_in",
-      "weight_lb", "liftgate", "residential", "quote_id", "carrier", "service",
-      "transit_days", "price", "mocked"
+      "booked_at", "label", "carrier", "price_usd", "transit_days",
+      "origin", "destination", "length_in", "width_in", "height_in",
+      "weight_lb", "liftgate", "residential", "notes"
     ];
   }
 
   function toRow(form, quote) {
     return {
       booked_at: new Date().toISOString(),
+      label: quote.label || "",
+      carrier: quote.carrier,
+      price_usd: quote.price,
+      transit_days: quote.days,
       origin: form.origin,
       destination: form.destination,
       length_in: form.length,
@@ -30,12 +35,7 @@
       weight_lb: form.weight,
       liftgate: form.liftgate ? "yes" : "no",
       residential: form.residential ? "yes" : "no",
-      quote_id: quote.id,
-      carrier: quote.carrier,
-      service: quote.service,
-      transit_days: quote.days,
-      price: quote.price,
-      mocked: true
+      notes: (quote.service || "") + " · mocked · " + (quote.id || "")
     };
   }
 
