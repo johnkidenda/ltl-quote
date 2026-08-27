@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>LTL quote</title>
+  <style>
+    :root { font-family: ui-sans-serif, system-ui, sans-serif; color: #1a1a1a; background: #f6f5f2; }
+    body { max-width: 720px; margin: 32px auto; padding: 0 16px; }
+    h1 { font-size: 1.35rem; font-weight: 650; margin: 0 0 6px; }
+    .note { color: #5c5c5c; font-size: 0.9rem; margin: 0 0 20px; }
+    form, .card { background: #fff; border: 1px solid #e4e2dc; border-radius: 10px; padding: 16px; }
+    label { display: block; font-size: 0.8rem; font-weight: 600; margin: 10px 0 4px; }
+    input[type=text], input[type=number] { width: 100%; box-sizing: border-box; padding: 8px 10px; border: 1px solid #ccc; border-radius: 6px; }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .dims { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+    .checks { display: flex; gap: 18px; margin: 12px 0; }
+    button { background: #1a1a1a; color: #fff; border: 0; border-radius: 6px; padding: 10px 14px; cursor: pointer; font-weight: 600; }
+    button.secondary { background: #fff; color: #1a1a1a; border: 1px solid #1a1a1a; }
+    #quotes { margin-top: 20px; display: grid; gap: 10px; }
+    .quote { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+    .badge { display: inline-block; font-size: 0.72rem; text-transform: uppercase; letter-spacing: .03em; background: #efeae0; padding: 2px 6px; border-radius: 4px; margin-left: 6px; }
+    #booked { margin-top: 16px; }
+    .err { color: #9b1c1c; font-size: 0.9rem; }
+  </style>
+</head>
+<body>
+  <h1>LTL quote</h1>
+  <p class="note">Rates, carriers, and transit are mocked. Charles / X-freight is not wired. No payments.</p>
+  <form id="quote-form">
+    <div class="row">
+      <div>
+        <label for="origin">Origin ZIP</label>
+        <input id="origin" name="origin" type="text" inputmode="numeric" required placeholder="78701">
+      </div>
+      <div>
+        <label for="destination">Destination ZIP</label>
+        <input id="destination" name="destination" type="text" inputmode="numeric" required placeholder="10001">
+      </div>
+    </div>
+    <div class="dims">
+      <div>
+        <label for="length">Length (in)</label>
+        <input id="length" name="length" type="number" min="1" step="1" required value="48">
+      </div>
+      <div>
+        <label for="width">Width (in)</label>
+        <input id="width" name="width" type="number" min="1" step="1" required value="40">
+      </div>
+      <div>
+        <label for="height">Height (in)</label>
+        <input id="height" name="height" type="number" min="1" step="1" required value="48">
+      </div>
+    </div>
+    <label for="weight">Weight (lb)</label>
+    <input id="weight" name="weight" type="number" min="1" step="1" required value="800">
+    <div class="checks">
+      <label><input type="checkbox" id="liftgate" name="liftgate"> Liftgate</label>
+      <label><input type="checkbox" id="residential" name="residential"> Residential</label>
+    </div>
+    <button type="submit">Get quotes</button>
+    <p id="form-err" class="err" hidden></p>
+  </form>
+  <div id="quotes" hidden></div>
+  <div id="booked" hidden></div>
+  <script src="quotes.js"></script>
+  <script src="book.js"></script>
+  <script>
+    var formEl = document.getElementById("quote-form");
+    var quotesEl = document.getElementById("quotes");
+    var bookedEl = document.getElementById("booked");
+    var lastForm = null;
+
+    function readForm() {
+      return {
+        origin: formEl.origin.value.trim(),
+        destination: formEl.destination.value.trim(),
+        length: formEl.length.value,
+        width: formEl.width.value,
+        height: formEl.height.value,
+        weight: formEl.weight.value,
+        liftgate: formEl.liftgate.checked,
+        residential: formEl.residential.checked
+      };
+    }
+
+    formEl.addEventListener("submit", function (e) {
+      e.preventDefault();
+      bookedEl.hidden = true;
+      var form = readForm();
+      lastForm = form;
+      var result = window.FreightQuotes.getQuotes(form);
+      quotesEl.hidden = false;
+      quotesEl.innerHTML = "";
+      result.quotes.forEach(function (q) {
+        var card = document.createElement("div");
+        card.className = "card quote";
+        var left = document.createElement("div");
+        left.innerHTML = "<strong>" + q.carrier + "</strong> · " + q.service +
+          (q.label ? "<span class=\"badge\">" + q.label + "</span>" : "") +
+          "<div>$" + q.price.toFixed(2) + " · " + q.days + " day" + (q.days === 1 ? "" : "s") + "</div>";
+        var btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "secondary";
+        btn.textContent = "Book";
+        btn.addEventListener("click", function () {
+          var row = window.FreightBook.bookQuote(lastForm, q);
+          quotesEl.hidden = true;
+          bookedEl.hidden = false;
+          bookedEl.className = "card";
+          bookedEl.innerHTML = "<strong>Booked (mock)</strong><div>" +
+            row.carrier + " · " + row.service + " · $" + Number(row.price).toFixed(2) +
+            "</div><div>" + row.origin + " → " + row.destination +
+            " · " + row.weight_lb + " lb</div><div>CSV downloaded. Row also stored in this browser.</div>";
+        });
+        card.appendChild(left);
+        card.appendChild(btn);
+        quotesEl.appendChild(card);
+      });
+    });
+  </script>
+</body>
+</html>
