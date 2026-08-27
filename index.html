@@ -109,9 +109,10 @@
           bookedEl.hidden = false;
           bookedEl.className = "card";
           bookedEl.innerHTML = "<strong>Booked (mock)</strong><div>" +
-            row.carrier + " · " + row.service + " · $" + Number(row.price).toFixed(2) +
+            row.carrier + (row.label ? " · " + row.label : "") + " · $" + Number(row.price_usd).toFixed(2) +
             "</div><div>" + row.origin + " → " + row.destination +
-            " · " + row.weight_lb + " lb</div><div>CSV downloaded. Row also stored in this browser.</div>";
+            " · " + row.weight_lb + " lb</div><div>" + (row.notes || "") +
+            "</div><div>CSV downloaded. Row also stored in this browser.</div>";
         });
         card.appendChild(left);
         card.appendChild(btn);
