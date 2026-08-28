@@ -20,7 +20,7 @@
     <aside class="rail" id="rail"></aside>
     <div class="main">
       <section class="screen is-on" id="screen-details">
-        <h1>Shipment details</h1>
+        <h1 tabindex="-1">Shipment details</h1>
         <p class="intro">Origin, destination, and freightable items. Destination country can be switched to demo the international customs step.</p>
         <div class="card" style="margin-bottom:16px">
           <div class="grid-4">
@@ -71,7 +71,7 @@
       </section>
 
       <section class="screen" id="screen-services">
-        <h1>Additional services</h1>
+        <h1 tabindex="-1">Additional services</h1>
         <p class="intro">Select accessorials, special handling, or other services to include on the mocked quote.</p>
         <div class="two-col">
           <div class="card">
@@ -94,7 +94,7 @@
       </section>
 
       <section class="screen" id="screen-routes">
-        <h1>Recommended</h1>
+        <h1 tabindex="-1">Recommended</h1>
         <p class="intro">The best mocked option in each category — across air and ocean. Select a card to continue.</p>
         <div class="pills" role="tablist" aria-label="Door service">
           <button type="button" class="pill is-on" data-door="door-to-door">Door to door</button>
@@ -104,7 +104,7 @@
       </section>
 
       <section class="screen" id="screen-addresses">
-        <h1>Addresses</h1>
+        <h1 tabindex="-1">Addresses</h1>
         <p class="intro">Pickup (shipper) and delivery (consignee). Exporter / importer of record default to the same parties.</p>
         <div class="addr-grid">
           <div class="card" id="pickup-card"></div>
@@ -117,7 +117,7 @@
       </section>
 
       <section class="screen" id="screen-customs">
-        <h1>Customs data</h1>
+        <h1 tabindex="-1">Customs data</h1>
         <p class="intro">This mocked shipment crosses an international border. Commodity details below are not a filing.</p>
         <div class="two-col">
           <div class="card">
@@ -168,7 +168,7 @@
       </section>
 
       <section class="screen" id="screen-confirm">
-        <h1>Confirm and book</h1>
+        <h1 tabindex="-1">Confirm and book</h1>
         <p class="intro">Review the mocked route, addresses, and services, then book. Booking writes a CSV in this browser only.</p>
         <div class="recap">
           <div>
@@ -543,7 +543,7 @@
     function renderBooked() {
       var row = state.booked;
       var q = state.selected;
-      $("booked-panel").innerHTML = "<h1>Booked (mock)</h1>" +
+      $("booked-panel").innerHTML = "<h1 tabindex=\"-1\">Booked (mock)</h1>" +
         "<p>" + esc(q.carrier) + (q.label ? " · " + esc(q.label) : "") + " · " + money(q.price) + "</p>" +
         "<p>" + esc(row.origin) + " → " + esc(row.destination) + "</p>" +
         "<p>" + esc(q.service) + " · " + q.days + " days · " + esc(q.doorService) + "</p>" +
@@ -584,6 +584,49 @@
       }).join("");
     }
 
+    function pinStepTop(id) {
+      var screen = $("screen-" + id);
+      var heading = screen ? screen.querySelector("h1") : null;
+      if (heading && !heading.hasAttribute("tabindex")) heading.setAttribute("tabindex", "-1");
+      var root = document.documentElement;
+      var workspace = document.querySelector(".workspace");
+      var main = document.querySelector(".main");
+      if (window.scrollTo) window.scrollTo(0, 0);
+      if (root) root.scrollTop = 0;
+      if (document.body) document.body.scrollTop = 0;
+      if (workspace) workspace.scrollTop = 0;
+      if (main) main.scrollTop = 0;
+      if (heading && heading.scrollIntoView) {
+        heading.scrollIntoView({ block: "start", inline: "nearest" });
+      }
+    }
+
+    function revealStep(id) {
+      if (typeof history !== "undefined" && "scrollRestoration" in history) {
+        history.scrollRestoration = "manual";
+      }
+      pinStepTop(id);
+      var screen = $("screen-" + id);
+      var heading = screen ? screen.querySelector("h1") : null;
+      function afterLayout() {
+        pinStepTop(id);
+        if (!heading) return;
+        try {
+          heading.focus({ preventScroll: true });
+        } catch (err) {
+          heading.focus();
+        }
+        pinStepTop(id);
+      }
+      if (typeof requestAnimationFrame === "function") {
+        requestAnimationFrame(function () {
+          requestAnimationFrame(afterLayout);
+        });
+      } else {
+        setTimeout(afterLayout, 0);
+      }
+    }
+
     function show(id) {
       state.step = id;
       if (stepIndex(id) > stepIndex(state.max) && id !== "booked") state.max = id;
@@ -602,6 +645,7 @@
       if (id === "booked") renderBooked();
       renderRail();
       renderSummary();
+      revealStep(id);
     }
 
     function fail(msg) {

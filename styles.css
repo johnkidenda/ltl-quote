@@ -20,7 +20,7 @@
 }
 
 * { box-sizing: border-box; }
-html, body { margin: 0; min-height: 100%; background: var(--bg); color: var(--text); }
+html, body { margin: 0; min-height: 100%; background: var(--bg); color: var(--text); overflow-anchor: none; }
 button, input, select, textarea { font: inherit; color: inherit; }
 a { color: inherit; }
 
@@ -168,7 +168,7 @@ input:focus, select:focus, textarea:focus {
 
 /* Quote workspace */
 .app-shell { min-height: 100vh; display: flex; flex-direction: column; background: #fff; }
-.workspace { display: flex; flex: 1; min-height: 0; }
+.workspace { display: flex; flex: 1; min-height: 0; overflow-anchor: none; }
 .rail {
   width: 280px;
   flex-shrink: 0;
@@ -218,10 +218,13 @@ input:focus, select:focus, textarea:focus {
   flex-direction: column;
   min-width: 0;
   background: #fff;
+  overflow-anchor: none;
 }
-.screen { display: none; padding: 36px 44px 24px; flex: 1; }
+.screen { display: none; padding: 36px 44px 24px; flex: 1; overflow-anchor: none; }
 .screen.is-on { display: block; }
 .screen h1 { font-size: 1.55rem; margin: 0 0 6px; letter-spacing: -0.02em; }
+.screen h1:focus { outline: none; }
+.screen h1:focus-visible { outline: 2px solid rgba(31, 157, 88, 0.45); outline-offset: 3px; }
 .screen .intro { color: var(--muted); margin: 0 0 22px; }
 
 .item-card { position: relative; margin-bottom: 14px; }
