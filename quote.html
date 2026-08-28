@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Quote &amp; book · rikifreight</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="app-shell">
+  <header class="topbar">
+    <a class="wordmark" href="index.html">rikifreight</a>
+    <p class="note">Rates, carriers, and transit are mocked. Charles / X-freight is not wired. No payments.</p>
+    <div class="who">
+      <span id="who-label"></span>
+      <button type="button" class="btn-ghost" id="logout">Log out</button>
+    </div>
+  </header>
+
+  <div class="workspace">
+    <aside class="rail" id="rail"></aside>
+    <div class="main">
+      <section class="screen is-on" id="screen-details">
+        <h1>Shipment details</h1>
+        <p class="intro">Origin, destination, and freightable items. Destination country can be switched to demo the international customs step.</p>
+        <div class="card" style="margin-bottom:16px">
+          <div class="grid-4">
+            <div class="field">
+              <label for="origin-city">Origin city</label>
+              <input id="origin-city" type="text" value="Chicago">
+            </div>
+            <div class="field">
+              <label for="origin-region">State / region</label>
+              <input id="origin-region" type="text" value="IL">
+            </div>
+            <div class="field">
+              <label for="origin-postal">Postal / ZIP</label>
+              <input id="origin-postal" type="text" value="60601">
+            </div>
+            <div class="field">
+              <label for="origin-country">Origin country</label>
+              <select id="origin-country"></select>
+            </div>
+          </div>
+          <div class="grid-4" style="margin-top:12px">
+            <div class="field">
+              <label for="dest-city">Destination city</label>
+              <input id="dest-city" type="text" value="Rio de Janeiro">
+            </div>
+            <div class="field">
+              <label for="dest-region">State / region</label>
+              <input id="dest-region" type="text" value="RJ">
+            </div>
+            <div class="field">
+              <label for="dest-postal">Postal / ZIP</label>
+              <input id="dest-postal" type="text" value="20080-002">
+            </div>
+            <div class="field">
+              <label for="dest-country">Destination country</label>
+              <select id="dest-country"></select>
+            </div>
+          </div>
+          <div class="field" style="margin-top:12px;max-width:240px">
+            <label for="ship-date">Ship date</label>
+            <input id="ship-date" type="date" value="2026-08-28">
+          </div>
+        </div>
+        <h2 style="font-size:1.05rem;margin:8px 0 10px">Freightable items</h2>
+        <div id="items"></div>
+        <button type="button" class="add-item" id="add-item">+ Add item</button>
+        <div class="summary" id="item-summary"></div>
+      </section>
+
+      <section class="screen" id="screen-services">
+        <h1>Additional services</h1>
+        <p class="intro">Select accessorials, special handling, or other services to include on the mocked quote.</p>
+        <div class="two-col">
+          <div class="card">
+            <table class="acc-table">
+              <thead>
+                <tr><th>Site services</th><th class="check">Pickup</th><th class="check">Delivery</th></tr>
+              </thead>
+              <tbody id="site-services"></tbody>
+            </table>
+          </div>
+          <div class="card">
+            <table class="acc-table">
+              <thead>
+                <tr><th>Domestic services</th><th class="check">General</th></tr>
+              </thead>
+              <tbody id="dom-services"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen" id="screen-routes">
+        <h1>Recommended</h1>
+        <p class="intro">The best mocked option in each category — across air and ocean. Select a card to continue.</p>
+        <div class="pills" role="tablist" aria-label="Door service">
+          <button type="button" class="pill is-on" data-door="door-to-door">Door to door</button>
+          <button type="button" class="pill" data-door="door-to-port">Door to port</button>
+        </div>
+        <div id="routes"></div>
+      </section>
+
+      <section class="screen" id="screen-addresses">
+        <h1>Addresses</h1>
+        <p class="intro">Pickup (shipper) and delivery (consignee). Exporter / importer of record default to the same parties.</p>
+        <div class="addr-grid">
+          <div class="card" id="pickup-card"></div>
+          <div class="card" id="delivery-card"></div>
+        </div>
+        <div class="grid-2" style="margin-top:16px">
+          <label class="card"><input type="checkbox" id="exporter-same" checked> Exporter of record: same as shipper</label>
+          <label class="card"><input type="checkbox" id="importer-same" checked> Importer of record: same as consignee</label>
+        </div>
+      </section>
+
+      <section class="screen" id="screen-customs">
+        <h1>Customs data</h1>
+        <p class="intro">This mocked shipment crosses an international border. Commodity details below are not a filing.</p>
+        <div class="two-col">
+          <div class="card">
+            <div class="field">
+              <label for="hs-search">Commodity selection</label>
+              <input id="hs-search" type="text">
+            </div>
+            <p class="note" id="hs-name" style="margin:8px 0 16px"></p>
+            <div class="grid-3">
+              <div class="field">
+                <label for="hs-qty">Quantity</label>
+                <input id="hs-qty" type="number" min="1" step="1">
+              </div>
+              <div class="field">
+                <label for="hs-value">Total line amount (USD)</label>
+                <input id="hs-value" type="number" min="0" step="0.01" value="100">
+              </div>
+              <div class="field">
+                <label for="hs-weight">Total weight (lb)</label>
+                <input id="hs-weight" type="number" min="1" step="1">
+              </div>
+            </div>
+            <div class="grid-3" style="margin-top:12px">
+              <div class="field">
+                <label for="hs-origin">Origin</label>
+                <select id="hs-origin"></select>
+              </div>
+              <div class="field">
+                <label for="hs-license">License type</label>
+                <select id="hs-license">
+                  <option>No license type</option>
+                  <option>NLR</option>
+                  <option>License exception</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="hs-eccn">ECCN</label>
+                <input id="hs-eccn" type="text" value="EAR99">
+              </div>
+            </div>
+          </div>
+          <aside class="card duty-box">
+            <strong>Estimated duties and fees</strong>
+            <dl id="duty-list"></dl>
+            <p class="fine">Mocked destination duties. Amounts are not a quote and are not filed.</p>
+          </aside>
+        </div>
+      </section>
+
+      <section class="screen" id="screen-confirm">
+        <h1>Confirm and book</h1>
+        <p class="intro">Review the mocked route, addresses, and services, then book. Booking writes a CSV in this browser only.</p>
+        <div class="recap">
+          <div>
+            <div class="card" id="recap-services" style="margin-bottom:12px"></div>
+            <div class="card" id="recap-addresses"></div>
+          </div>
+          <aside class="card" id="recap-cost"></aside>
+        </div>
+        <label class="terms">
+          <input type="checkbox" id="terms">
+          <span>I agree to the terms. I understand this shipment is a mock: rates are not live, Charles / X-freight is not wired, and no payment is taken.</span>
+        </label>
+      </section>
+
+      <section class="screen" id="screen-booked">
+        <div class="card booked-panel" id="booked-panel"></div>
+      </section>
+
+      <div class="footer-cta">
+        <p id="form-err" class="err"></p>
+        <button type="button" class="btn" id="cta">Choose services</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="session.js"></script>
+  <script src="quotes.js"></script>
+  <script src="book.js"></script>
+  <script>
+    window.FreightSession.requireQuote();
+
+    var COUNTRIES = [
+      { code: "US", name: "United States" },
+      { code: "BR", name: "Brazil" },
+      { code: "CA", name: "Canada" },
+      { code: "MX", name: "Mexico" },
+      { code: "GB", name: "United Kingdom" },
+      { code: "DE", name: "Germany" }
+    ];
+    var DEST_PRESETS = {
+      US: { city: "New York", region: "NY", postal: "10001", street: "350 5th Avenue", name: "Pickup warehouse" },
+      BR: { city: "Rio de Janeiro", region: "RJ", postal: "20080-002", street: "Avenida Marechal Floriano, 196", name: "Consignee warehouse" },
+      CA: { city: "Toronto", region: "ON", postal: "M5V 2T6", street: "100 Queen St W", name: "Consignee warehouse" },
+      MX: { city: "Mexico City", region: "CDMX", postal: "06000", street: "Paseo de la Reforma 222", name: "Consignee warehouse" },
+      GB: { city: "London", region: "", postal: "E1 6AN", street: "1 Primrose Street", name: "Consignee warehouse" },
+      DE: { city: "Hamburg", region: "", postal: "20457", street: "Speicherstadt 12", name: "Consignee warehouse" }
+    };
+    var SITE = [
+      ["liftgate", "Lift gate"],
+      ["construction", "Construction site"],
+      ["hotel", "Hotel"],
+      ["inside", "Inside"],
+      ["limited-access", "Limited access"],
+      ["residential", "Residential"],
+      ["school", "School"],
+      ["appointment-pickup", "Appointment pickup"],
+      ["appointment-delivery", "Appointment delivery"],
+      ["notification", "Delivery notification"],
+      ["sort-segment", "Sort and segment"],
+      ["fba", "FBA delivery"],
+      ["trade-show", "Trade show"]
+    ];
+    var DOMESTIC = [
+      ["alcohol", "Alcohol license fee"],
+      ["tarps", "Flatbed tarps"],
+      ["fragile", "Fragile — limited handling"],
+      ["hazardous", "Hazardous materials", "Requires hazardous items to select."],
+      ["in-bond", "In-bond transport"],
+      ["freeze", "Protect from freeze"],
+      ["unpalletized", "Unpalletized loose boxes"]
+    ];
+    var ACC_LABEL = {};
+    SITE.forEach(function (r) { ACC_LABEL[r[0]] = r[1]; });
+    DOMESTIC.forEach(function (r) { ACC_LABEL[r[0]] = r[1]; });
+    var STEPS = ["details", "services", "routes", "addresses", "customs", "confirm", "booked"];
+    var STEP_TITLE = {
+      details: "Shipment details",
+      services: "Additional services",
+      routes: "Route selection",
+      addresses: "Addresses",
+      customs: "Customs & duties",
+      confirm: "Confirm and book",
+      booked: "Booked"
+    };
+    var CTA = {
+      details: "Choose services",
+      services: "Get rating",
+      routes: "Continue to addresses",
+      addresses: "Next",
+      customs: "Next",
+      confirm: "Book shipment",
+      booked: "Start another quote"
+    };
+
+    var session = window.FreightSession.get() || { username: "guest" };
+    document.getElementById("who-label").textContent = session.username;
+    document.getElementById("logout").addEventListener("click", function () {
+      window.FreightSession.clear();
+      location.href = "index.html";
+    });
+
+    var state = {
+      step: "details",
+      max: "details",
+      doorService: "door-to-door",
+      quotes: null,
+      selected: null,
+      booked: null,
+      items: [{ description: "Purple kumquats", freightType: "General", qty: 10, length: 48, width: 24, height: 24, dimUnit: "in", weight: 500, weightUnit: "lb" }]
+    };
+
+    function $(id) { return document.getElementById(id); }
+    function esc(s) {
+      return String(s == null ? "" : s)
+        .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/"/g, "&quot;");
+    }
+    function money(n) {
+      return "$" + Number(n || 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+    function countryName(code) {
+      var row = COUNTRIES.filter(function (c) { return c.code === code; })[0];
+      return row ? row.name : code;
+    }
+    function fillCountrySelect(el, selected) {
+      el.innerHTML = COUNTRIES.map(function (c) {
+        return "<option value=\"" + c.code + "\"" + (c.code === selected ? " selected" : "") + ">" + esc(c.name) + "</option>";
+      }).join("");
+    }
+    function place(prefix) {
+      return {
+        city: $(prefix + "-city").value.trim(),
+        region: $(prefix + "-region").value.trim(),
+        postal: $(prefix + "-postal").value.trim(),
+        country: $(prefix + "-country").value
+      };
+    }
+    function formatPlace(p) {
+      return [p.city, p.region, p.postal].filter(Boolean).join(", ") + (p.country ? " " + p.country : "");
+    }
+    function selectedKeys(group) {
+      return Array.prototype.map.call(document.querySelectorAll('input[data-acc-group="' + group + '"]:checked'), function (el) {
+        return el.getAttribute("data-acc");
+      });
+    }
+    function addr(prefix) {
+      return {
+        name: $(prefix + "-name").value.trim(),
+        street: $(prefix + "-street").value.trim(),
+        city: $(prefix + "-city").value.trim(),
+        region: $(prefix + "-region").value.trim(),
+        postal: $(prefix + "-postal").value.trim(),
+        country: $(prefix + "-country").value.trim(),
+        hoursFrom: $(prefix + "-from").value,
+        hoursTo: $(prefix + "-to").value,
+        contact: $(prefix + "-contact").value.trim(),
+        phone: $(prefix + "-phone").value.trim()
+      };
+    }
+    function snapshot() {
+      var origin = place("origin");
+      var dest = place("dest");
+      var pickup = { pickup: true };
+      var delivery = { delivery: true };
+      if ($("pickup-name")) pickup = addr("pickup");
+      if ($("delivery-name")) delivery = addr("delivery");
+      var acc = { pickup: selectedKeys("pickup"), delivery: selectedKeys("delivery"), general: selectedKeys("general") };
+      var hs = $("hs-search") ? $("hs-search").value.trim() : "";
+      return {
+        origin: formatPlace(origin),
+        destination: formatPlace(dest),
+        originCountry: origin.country,
+        destCountry: dest.country,
+        shipDate: $("ship-date").value,
+        items: state.items.map(function (it) { return Object.assign({}, it); }),
+        accessorials: acc,
+        liftgate: acc.pickup.indexOf("liftgate") >= 0 || acc.delivery.indexOf("liftgate") >= 0,
+        residential: acc.pickup.indexOf("residential") >= 0 || acc.delivery.indexOf("residential") >= 0,
+        doorService: state.doorService,
+        pickup: pickup,
+        delivery: delivery,
+        customsValue: $("hs-value") ? Number($("hs-value").value) : 0,
+        customs: {
+          hs: hs,
+          value: $("hs-value") ? Number($("hs-value").value) : "",
+          estimatedDuty: state.quotes && state.quotes.duties ? state.quotes.duties.total : ""
+        },
+        pieces: window.FreightQuotes.summarizeShipment({ items: state.items }).pieces,
+        termsAccepted: $("terms") ? $("terms").checked : false
+      };
+    }
+    function isIntl() {
+      return window.FreightQuotes.isInternational(snapshot());
+    }
+    function visibleSteps() {
+      return STEPS.filter(function (s) {
+        if (s === "customs") return isIntl() || state.step === "customs";
+        if (s === "booked") return state.step === "booked";
+        return true;
+      });
+    }
+    function stepIndex(id) { return STEPS.indexOf(id); }
+
+    function renderItems() {
+      $("items").innerHTML = state.items.map(function (it, i) {
+        return '<div class="card item-card" data-item="' + i + '">' +
+          (state.items.length > 1 ? '<button type="button" class="remove" data-remove="' + i + '" aria-label="Remove item">×</button>' : "") +
+          '<div class="grid-2">' +
+            '<div class="field"><label>Commodity description</label><input data-k="description" data-i="' + i + '" type="text" value="' + esc(it.description) + '"></div>' +
+            '<div class="field"><label>Freight type</label><select data-k="freightType" data-i="' + i + '">' +
+              ["General", "Frozen", "Hazardous"].map(function (t) {
+                return "<option" + (it.freightType === t ? " selected" : "") + ">" + t + "</option>";
+              }).join("") +
+            "</select></div>" +
+          "</div>" +
+          '<div class="grid-4" style="margin-top:12px">' +
+            '<div class="field"><label>Quantity</label><input data-k="qty" data-i="' + i + '" type="number" min="1" value="' + esc(it.qty) + '"></div>' +
+            '<div class="field"><label>Length</label><input data-k="length" data-i="' + i + '" type="number" min="1" value="' + esc(it.length) + '"></div>' +
+            '<div class="field"><label>Width</label><input data-k="width" data-i="' + i + '" type="number" min="1" value="' + esc(it.width) + '"></div>' +
+            '<div class="field"><label>Height</label><input data-k="height" data-i="' + i + '" type="number" min="1" value="' + esc(it.height) + '"></div>' +
+          "</div>" +
+          '<div class="grid-4" style="margin-top:12px">' +
+            '<div class="field"><label>Dim unit</label><select data-k="dimUnit" data-i="' + i + '"><option' + (it.dimUnit === "in" ? " selected" : "") + '>in</option><option' + (it.dimUnit === "cm" ? " selected" : "") + '>cm</option></select></div>' +
+            '<div class="field"><label>Combined wt.</label><input data-k="weight" data-i="' + i + '" type="number" min="1" value="' + esc(it.weight) + '"></div>' +
+            '<div class="field"><label>Weight unit</label><select data-k="weightUnit" data-i="' + i + '"><option' + (it.weightUnit === "lb" ? " selected" : "") + '>lb</option><option' + (it.weightUnit === "kg" ? " selected" : "") + '>kg</option></select></div>' +
+          "</div></div>";
+      }).join("");
+      renderSummary();
+    }
+    function renderSummary() {
+      var s = window.FreightQuotes.summarizeShipment({ items: state.items });
+      var form = snapshot();
+      var cls = window.FreightQuotes.freightClassLabel(form);
+      $("item-summary").innerHTML =
+        chip("Weight (act)", Math.round(s.actualWeight).toLocaleString() + " lb / " + Math.round(s.actualKg) + " kg") +
+        chip("Weight (dim)", Math.round(s.dimWeight).toLocaleString() + " lb / " + Math.round(s.dimKg) + " kg") +
+        chip("Pieces", String(s.pieces)) +
+        chip("Freight class", cls) +
+        chip("Volume", s.volumeCft.toFixed(2) + " CFT / " + s.volumeM3.toFixed(2) + " m³");
+    }
+    function chip(k, v) { return '<div class="chip"><span>' + esc(k) + "</span><strong>" + esc(v) + "</strong></div>"; }
+
+    function renderServices() {
+      $("site-services").innerHTML = SITE.map(function (row) {
+        return "<tr><td>" + esc(row[1]) + '</td><td class="check"><input type="checkbox" data-acc="' + row[0] + '" data-acc-group="pickup"></td><td class="check"><input type="checkbox" data-acc="' + row[0] + '" data-acc-group="delivery"></td></tr>';
+      }).join("");
+      $("dom-services").innerHTML = DOMESTIC.map(function (row) {
+        return "<tr><td>" + esc(row[1]) + (row[2] ? '<span class="acc-help">' + esc(row[2]) + "</span>" : "") + '</td><td class="check"><input type="checkbox" data-acc="' + row[0] + '" data-acc-group="general"></td></tr>';
+      }).join("");
+    }
+
+    function quoteFor(mode, label) {
+      var list = (state.quotes && state.quotes.quotes) || [];
+      return list.filter(function (q) { return q.mode === mode && q.label === label; })[0];
+    }
+    function renderRoutes() {
+      if (!state.quotes) {
+        $("routes").innerHTML = "<p class=\"note\">Get a rating from additional services first.</p>";
+        return;
+      }
+      var labels = ["cheapest", "fastest", "most reliable", "shortest"];
+      var heads = ["Cheapest", "Fastest", "Most reliable", "Shortest distance"];
+      var subs = ["Lowest total cost", "Arrives soonest", "Best on-time record", "Least distance on truck"];
+      var html = '<div class="route-grid"><div></div>';
+      heads.forEach(function (h, i) {
+        html += '<div class="route-head">' + h + '<span class="sub">' + subs[i] + "</span></div>";
+      });
+      ["air", "ocean"].forEach(function (mode) {
+        html += '<div class="mode-cell"><strong>' + (mode === "air" ? "Air freight" : "Ocean freight") + "</strong><span>" + (mode === "air" ? "Faster transit · higher cost" : "Lower cost · longer transit") + "</span></div>";
+        labels.forEach(function (lab) {
+          var q = quoteFor(mode, lab);
+          if (!q) { html += "<div></div>"; return; }
+          var on = state.selected && state.selected.id === q.id;
+          html += '<button type="button" class="qcard' + (on ? " is-on" : "") + '" data-qid="' + esc(q.id) + '">' +
+            '<p class="amt">' + money(q.price) + "</p>" +
+            '<p class="when">' + q.days + " days · Delivers " + esc(q.deliverLabel) + "</p>" +
+            '<p class="via">' + esc(q.via) + "<br>" + q.truckMiles + " mi on truck</p>" +
+            '<span class="btn-select">Select</span></button>';
+        });
+      });
+      html += "</div>";
+      $("routes").innerHTML = html;
+    }
+
+    function addrFields(prefix, title, data) {
+      return "<h2 style=\"font-size:1rem;margin:0 0 12px\">" + esc(title) + "</h2>" +
+        '<div class="field"><label>Location name</label><input id="' + prefix + '-name" type="text" value="' + esc(data.name) + '"></div>' +
+        '<div class="field" style="margin-top:10px"><label>Street</label><input id="' + prefix + '-street" type="text" value="' + esc(data.street) + '"></div>' +
+        '<div class="grid-3" style="margin-top:10px">' +
+          '<div class="field"><label>City</label><input id="' + prefix + '-city" type="text" value="' + esc(data.city) + '"></div>' +
+          '<div class="field"><label>Region</label><input id="' + prefix + '-region" type="text" value="' + esc(data.region) + '"></div>' +
+          '<div class="field"><label>Postal</label><input id="' + prefix + '-postal" type="text" value="' + esc(data.postal) + '"></div>' +
+        "</div>" +
+        '<div class="field" style="margin-top:10px"><label>Country</label><input id="' + prefix + '-country" type="text" value="' + esc(data.country) + '"></div>' +
+        '<div class="grid-2" style="margin-top:10px">' +
+          '<div class="field"><label>Hours from</label><input id="' + prefix + '-from" type="time" value="' + esc(data.hoursFrom) + '"></div>' +
+          '<div class="field"><label>Hours to</label><input id="' + prefix + '-to" type="time" value="' + esc(data.hoursTo) + '"></div>' +
+        "</div>" +
+        '<div class="grid-2" style="margin-top:10px">' +
+          '<div class="field"><label>Contact name</label><input id="' + prefix + '-contact" type="text" value="' + esc(data.contact) + '"></div>' +
+          '<div class="field"><label>Phone</label><input id="' + prefix + '-phone" type="tel" value="' + esc(data.phone) + '"></div>' +
+        "</div>";
+    }
+    function defaultPickup() {
+      return { name: "Shipper warehouse", street: "201 E Randolph St", city: "Chicago", region: "IL", postal: "60601", country: "United States", hoursFrom: "08:00", hoursTo: "17:00", contact: "Jane Doe", phone: "555-555-5555" };
+    }
+    function defaultDelivery() {
+      var dest = place("dest");
+      var pre = DEST_PRESETS[dest.country] || DEST_PRESETS.BR;
+      return { name: pre.name, street: pre.street, city: dest.city || pre.city, region: dest.region || pre.region, postal: dest.postal || pre.postal, country: countryName(dest.country), hoursFrom: "09:00", hoursTo: "17:00", contact: "Jane Doe", phone: "555-555-5555" };
+    }
+    function ensureAddresses() {
+      if (!$("pickup-name")) {
+        $("pickup-card").innerHTML = addrFields("pickup", "Pickup (shipper)", defaultPickup());
+        $("delivery-card").innerHTML = addrFields("delivery", "Delivery (consignee)", defaultDelivery());
+      }
+    }
+    function syncDeliveryFromDest() {
+      if (!$("delivery-city")) return;
+      var d = defaultDelivery();
+      $("delivery-name").value = d.name;
+      $("delivery-street").value = d.street;
+      $("delivery-city").value = d.city;
+      $("delivery-region").value = d.region;
+      $("delivery-postal").value = d.postal;
+      $("delivery-country").value = d.country;
+    }
+
+    function fillCustoms() {
+      var form = snapshot();
+      var hint = window.FreightQuotes.suggestCommodity(state.items[0] && state.items[0].description);
+      var sum = window.FreightQuotes.summarizeShipment(form);
+      if (!$("hs-search").value) $("hs-search").value = hint.hs + " — " + hint.name;
+      $("hs-name").textContent = hint.hs + " — " + hint.name;
+      if (!$("hs-qty").value) $("hs-qty").value = sum.pieces;
+      if (!$("hs-weight").value) $("hs-weight").value = Math.round(sum.actualWeight);
+      fillCountrySelect($("hs-origin"), form.originCountry || "US");
+      renderDuties();
+    }
+    function renderDuties() {
+      var form = snapshot();
+      form.customsValue = Number($("hs-value").value || 0);
+      var d = window.FreightQuotes.estimateDuties(form);
+      if (state.quotes) state.quotes.duties = d;
+      $("duty-list").innerHTML =
+        "<div><dt>Duty (" + Math.round(d.dutyRate * 1000) / 10 + "%)</dt><dd>" + money(d.duty) + "</dd></div>" +
+        "<div><dt>Tax (" + Math.round(d.taxRate * 1000) / 10 + "%)</dt><dd>" + money(d.tax) + "</dd></div>" +
+        "<div><dt>Anti-dumping</dt><dd>" + money(d.antiDumping) + "</dd></div>" +
+        "<div><dt>Merchandise processing</dt><dd>" + money(d.merchandiseProcessing) + "</dd></div>" +
+        "<div><dt>Harbor maintenance</dt><dd>" + money(d.harborMaintenance) + "</dd></div>" +
+        "<div><dt><strong>Estimated total</strong></dt><dd><strong>" + money(d.total) + "</strong></dd></div>";
+    }
+
+    function accRecap() {
+      var form = snapshot();
+      var keys = window.FreightQuotes.accessorialKeys(form);
+      if (!keys.length) return "No additional services included.";
+      return keys.map(function (k) { return ACC_LABEL[k] || k; }).join(", ");
+    }
+    function renderConfirm() {
+      var q = state.selected;
+      $("recap-services").innerHTML = "<strong>Additional services</strong><p class=\"note\" style=\"margin:8px 0 0\">" + esc(accRecap()) + "</p>";
+      var p = addr("pickup");
+      var d = addr("delivery");
+      $("recap-addresses").innerHTML = "<strong>Addresses</strong><div class=\"grid-2\" style=\"margin-top:10px\">" +
+        "<div><div class=\"muted\">Pickup (shipper)</div><strong>" + esc(p.name) + "</strong><div>" + esc(p.street) + "</div><div>" + esc([p.city, p.region, p.postal].join(", ")) + "</div><div>" + esc(p.country) + "</div><div class=\"muted\">" + esc(p.hoursFrom + " – " + p.hoursTo) + "</div><div>" + esc(p.contact) + " · " + esc(p.phone) + "</div>" +
+        "<div class=\"muted\" style=\"margin-top:8px\">Exporter of record</div><div>" + ($("exporter-same").checked ? "Same as shipper" : "Other") + "</div></div>" +
+        "<div><div class=\"muted\">Delivery (consignee)</div><strong>" + esc(d.name) + "</strong><div>" + esc(d.street) + "</div><div>" + esc([d.city, d.region, d.postal].join(", ")) + "</div><div>" + esc(d.country) + "</div><div class=\"muted\">" + esc(d.hoursFrom + " – " + d.hoursTo) + "</div><div>" + esc(d.contact) + " · " + esc(d.phone) + "</div>" +
+        "<div class=\"muted\" style=\"margin-top:8px\">Importer of record</div><div>" + ($("importer-same").checked ? "Same as consignee" : "Other") + "</div></div></div>";
+      $("recap-cost").innerHTML = "<strong>Shipment costs</strong>" +
+        (q ? "<div style=\"margin-top:12px\"><div class=\"muted\">" + esc(q.service) + " · " + esc(q.label) + "</div><div style=\"font-size:1.4rem;font-weight:750;margin:6px 0\">" + money(q.price) + "</div><div class=\"note\">" + esc(q.carrier) + " · " + q.days + " days · Delivers " + esc(q.deliverLabel) + "</div><div class=\"note\" style=\"margin-top:8px\">Insurance premium · n/a</div><div style=\"margin-top:10px\"><strong>Total due " + money(q.price) + "</strong></div></div>" : "<p class=\"note\">Select a route first.</p>");
+    }
+    function renderBooked() {
+      var row = state.booked;
+      var q = state.selected;
+      $("booked-panel").innerHTML = "<h1>Booked (mock)</h1>" +
+        "<p>" + esc(q.carrier) + (q.label ? " · " + esc(q.label) : "") + " · " + money(q.price) + "</p>" +
+        "<p>" + esc(row.origin) + " → " + esc(row.destination) + "</p>" +
+        "<p>" + esc(q.service) + " · " + q.days + " days · " + esc(q.doorService) + "</p>" +
+        "<p class=\"note\">CSV downloaded. Row also stored in this browser. " + esc(row.notes) + "</p>" +
+        '<p class="note">booked_at, label, carrier, price_usd, transit_days, origin, destination, length_in, width_in, height_in, weight_lb, liftgate, residential, notes, plus commodity / route / address / customs columns.</p>';
+    }
+
+    function railMeta(id) {
+      var form = snapshot();
+      var sum = window.FreightQuotes.summarizeShipment(form);
+      if (id === "details") {
+        return formatPlace(place("origin")) + " → " + formatPlace(place("dest")) +
+          "<br>" + esc(state.items[0].description || "Items") + " · " + sum.pieces + " pcs · " + Math.round(sum.actualWeight) + " lb";
+      }
+      if (id === "services") return accRecap() === "No additional services included." ? "None selected" : accRecap();
+      if (id === "routes" && state.selected) {
+        var q = state.selected;
+        return q.carrier + " · " + q.originHub + " → " + q.destHub + "<br>Delivers " + q.deliverLabel;
+      }
+      if (id === "addresses" && $("pickup-name")) {
+        return "From " + esc($("pickup-name").value) + "<br>To " + esc($("delivery-name").value);
+      }
+      return "";
+    }
+    function renderRail() {
+      var vis = visibleSteps();
+      $("rail").innerHTML = "<h2>Quote &amp; book</h2>" + vis.map(function (id) {
+        var done = stepIndex(id) < stepIndex(state.step);
+        var active = id === state.step;
+        var locked = stepIndex(id) > stepIndex(state.max);
+        var cls = "step" + (active ? " is-active" : "") + (done ? " is-done" : "");
+        var mark = done ? "✓" : (STEPS.indexOf(id) + 1);
+        if (id === "booked") mark = "✓";
+        return '<button type="button" class="' + cls + '" data-step="' + id + '"' + (locked ? " disabled" : "") + ">" +
+          '<span class="step-dot">' + mark + "</span><span><span class=\"step-title\">" + STEP_TITLE[id] + "</span>" +
+          (railMeta(id) ? '<div class="step-meta">' + railMeta(id) + "</div>" : "") +
+          "</span></button>";
+      }).join("");
+    }
+
+    function show(id) {
+      state.step = id;
+      if (stepIndex(id) > stepIndex(state.max) && id !== "booked") state.max = id;
+      if (id === "booked") state.max = "booked";
+      STEPS.forEach(function (s) {
+        var el = $("screen-" + s);
+        if (el) el.classList.toggle("is-on", s === id);
+      });
+      $("cta").textContent = CTA[id];
+      $("cta").disabled = id === "routes" && !state.selected;
+      $("form-err").textContent = "";
+      if (id === "routes") renderRoutes();
+      if (id === "addresses") ensureAddresses();
+      if (id === "customs") fillCustoms();
+      if (id === "confirm") renderConfirm();
+      if (id === "booked") renderBooked();
+      renderRail();
+      renderSummary();
+    }
+
+    function fail(msg) {
+      $("form-err").textContent = msg;
+    }
+    function validateDetails() {
+      var o = place("origin");
+      var d = place("dest");
+      if (!o.city || !d.city) return "Enter origin and destination cities.";
+      if (!state.items.length) return "Add at least one freightable item.";
+      for (var i = 0; i < state.items.length; i++) {
+        var it = state.items[i];
+        if (!it.description) return "Enter a commodity description.";
+        if (!(Number(it.qty) > 0 && Number(it.length) > 0 && Number(it.width) > 0 && Number(it.height) > 0 && Number(it.weight) > 0)) {
+          return "Each item needs quantity, dimensions, and weight.";
+        }
+      }
+      return "";
+    }
+    function nextAfterAddresses() { return isIntl() ? "customs" : "confirm"; }
+
+    function goNext() {
+      var step = state.step;
+      if (step === "details") {
+        var v = validateDetails();
+        if (v) return fail(v);
+        show("services");
+        return;
+      }
+      if (step === "services") {
+        state.quotes = window.FreightQuotes.getQuotes(snapshot());
+        state.selected = null;
+        show("routes");
+        return;
+      }
+      if (step === "routes") {
+        if (!state.selected) return fail("Select a route card.");
+        show("addresses");
+        return;
+      }
+      if (step === "addresses") {
+        ensureAddresses();
+        var p = addr("pickup");
+        var d = addr("delivery");
+        if (!p.street || !d.street) return fail("Enter pickup and delivery streets.");
+        show(nextAfterAddresses());
+        return;
+      }
+      if (step === "customs") {
+        if (!$("hs-search").value.trim()) return fail("Enter a commodity / HS selection.");
+        show("confirm");
+        return;
+      }
+      if (step === "confirm") {
+        if (!$("terms").checked) return fail("Agree to the terms to book.");
+        if (!state.selected) return fail("Select a route first.");
+        var form = snapshot();
+        if (state.quotes && state.quotes.duties) form.customs.estimatedDuty = state.quotes.duties.total;
+        state.booked = window.FreightBook.bookQuote(form, state.selected);
+        show("booked");
+        return;
+      }
+      if (step === "booked") {
+        location.reload();
+      }
+    }
+
+    fillCountrySelect($("origin-country"), "US");
+    fillCountrySelect($("dest-country"), "BR");
+    renderItems();
+    renderServices();
+    renderRail();
+    show("details");
+
+    $("add-item").addEventListener("click", function () {
+      state.items.push({ description: "", freightType: "General", qty: 1, length: 48, width: 40, height: 48, dimUnit: "in", weight: 100, weightUnit: "lb" });
+      renderItems();
+    });
+    function onItemField(e) {
+      var i = e.target.getAttribute("data-i");
+      var k = e.target.getAttribute("data-k");
+      if (i == null || !k) return;
+      var val = e.target.value;
+      if (k === "qty" || k === "length" || k === "width" || k === "height" || k === "weight") val = Number(val);
+      state.items[Number(i)][k] = val;
+      renderSummary();
+      renderRail();
+    }
+    $("items").addEventListener("input", onItemField);
+    $("items").addEventListener("change", onItemField);
+    $("items").addEventListener("click", function (e) {
+      var rm = e.target.getAttribute("data-remove");
+      if (rm == null) return;
+      if (state.items.length < 2) return;
+      state.items.splice(Number(rm), 1);
+      renderItems();
+      renderRail();
+    });
+    $("dest-country").addEventListener("change", function () {
+      var pre = DEST_PRESETS[this.value] || DEST_PRESETS.US;
+      $("dest-city").value = pre.city;
+      $("dest-region").value = pre.region;
+      $("dest-postal").value = pre.postal;
+      syncDeliveryFromDest();
+      state.quotes = null;
+      state.selected = null;
+      renderSummary();
+      renderRail();
+    });
+    ["origin-city", "origin-region", "origin-postal", "origin-country", "dest-city", "dest-region", "dest-postal", "ship-date"].forEach(function (id) {
+      $(id).addEventListener("input", function () { renderSummary(); renderRail(); });
+      $(id).addEventListener("change", function () { renderSummary(); renderRail(); });
+    });
+    document.querySelector(".pills").addEventListener("click", function (e) {
+      var door = e.target.getAttribute("data-door");
+      if (!door) return;
+      state.doorService = door;
+      Array.prototype.forEach.call(document.querySelectorAll(".pill"), function (el) {
+        el.classList.toggle("is-on", el.getAttribute("data-door") === door);
+      });
+      if (state.quotes) {
+        state.quotes = window.FreightQuotes.getQuotes(snapshot());
+        state.selected = null;
+        renderRoutes();
+        $("cta").disabled = true;
+      }
+    });
+    $("routes").addEventListener("click", function (e) {
+      var btn = e.target.closest("[data-qid]");
+      if (!btn) return;
+      var id = btn.getAttribute("data-qid");
+      state.selected = ((state.quotes && state.quotes.quotes) || []).filter(function (q) { return q.id === id; })[0] || null;
+      renderRoutes();
+      $("cta").disabled = !state.selected;
+      renderRail();
+    });
+    $("hs-value").addEventListener("input", renderDuties);
+    $("cta").addEventListener("click", goNext);
+    $("rail").addEventListener("click", function (e) {
+      var btn = e.target.closest("[data-step]");
+      if (!btn || btn.disabled) return;
+      var id = btn.getAttribute("data-step");
+      if (id === "routes" && !state.quotes) {
+        state.quotes = window.FreightQuotes.getQuotes(snapshot());
+      }
+      if (id === "confirm" && !state.selected) return fail("Select a route first.");
+      show(id);
+    });
+  </script>
+</body>
+</html>
