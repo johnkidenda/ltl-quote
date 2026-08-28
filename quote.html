@@ -627,7 +627,7 @@
       }
     }
 
-    function show(id) {
+    function show(id, opts) {
       state.step = id;
       if (stepIndex(id) > stepIndex(state.max) && id !== "booked") state.max = id;
       if (id === "booked") state.max = "booked";
@@ -645,7 +645,7 @@
       if (id === "booked") renderBooked();
       renderRail();
       renderSummary();
-      revealStep(id);
+      if (!opts || opts.reveal !== false) revealStep(id);
     }
 
     function fail(msg) {
@@ -718,7 +718,7 @@
     renderItems();
     renderServices();
     renderRail();
-    show("details");
+    show("details", { reveal: false });
 
     $("add-item").addEventListener("click", function () {
       state.items.push({ description: "", freightType: "General", qty: 1, length: 48, width: 40, height: 48, dimUnit: "in", weight: 100, weightUnit: "lb" });
