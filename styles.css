@@ -52,13 +52,6 @@ a { color: inherit; }
 }
 .btn:hover { background: var(--green-hover); }
 .btn:disabled { opacity: 0.45; cursor: not-allowed; }
-.btn-ghost {
-  background: transparent;
-  color: var(--navy);
-  padding: 8px 10px;
-  font-weight: 600;
-}
-.btn-ghost:hover { background: var(--soft); color: var(--navy); }
 .btn-select {
   background: #fff;
   color: var(--navy);
