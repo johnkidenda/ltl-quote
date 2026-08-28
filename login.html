@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Log in · rikifreight</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="wordmark" href="index.html">rikifreight</a>
+  </header>
+
+  <main class="login-wrap">
+    <form class="login-card" id="login-form">
+      <h1>Log in</h1>
+      <p class="note">Opens your quote page.</p>
+      <div class="stack">
+        <div class="field">
+          <label for="username">Username</label>
+          <input id="username" name="username" type="text" autocomplete="username" required>
+        </div>
+        <div class="field">
+          <label for="password">Password</label>
+          <input id="password" name="password" type="password" autocomplete="current-password" required>
+        </div>
+      </div>
+      <p id="login-err" class="err" hidden></p>
+      <button class="btn" type="submit">Log in</button>
+      <p class="note" style="margin-top:16px">Mock sign-in. Any non-empty username and password works. No accounts.</p>
+    </form>
+  </main>
+
+  <script src="session.js"></script>
+  <script>
+    if (window.FreightSession.get()) location.replace("quote.html");
+    document.getElementById("login-form").addEventListener("submit", function (e) {
+      e.preventDefault();
+      var user = document.getElementById("username").value.trim();
+      var pass = document.getElementById("password").value;
+      var err = document.getElementById("login-err");
+      if (!user || !pass) {
+        err.hidden = false;
+        err.textContent = "Enter a username and password.";
+        return;
+      }
+      window.FreightSession.set(user);
+      location.href = "quote.html";
+    });
+  </script>
+</body>
+</html>
